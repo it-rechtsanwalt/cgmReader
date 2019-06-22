@@ -60,19 +60,19 @@ Software:
 
 ## Q&A: 
 
-### why am I doing this?
+### Why am I doing this?
 
 **Because I can!**
 
-### honestly: why am I doing this?
+### Honestly: Why am I doing this?
 
-honestly: because i can!
+Honestly: Because I can!
 
 ### for real?
 
-yes. AND: my wife got diabetes type I. if i want to check her values a night, I need to wake her up to grab the pump. Sooo: I wanted a system to check the values "over the air". 
+Yes. AND: My wife got diabetes type I. If I want to check her values a night, I need to wake her up to grab the pump. Sooooo: I wanted a system to check the values "over the air". 
 
-### why c++? there are other implenetations with python
+### Why c++? there are other implenetations with python
 
 1. I do not speak python
 2. I wanted a "fun" project in C++
