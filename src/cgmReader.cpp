@@ -25,9 +25,308 @@
 
 
 #include <iostream>
+#include "utils/loguru.hpp"
+#include "pumpdriver/PumpReader.h"
+#include <future>
+
+
+#include <unistd.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "MainParameters.h"
+#include <mutex>
+
 using namespace std;
 
-int main() {
-	cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
+//////////////// STATICS ////////////////////
+const int VERSION_MAJOR = 0;
+const int VERSION_MINOR = 1;
+int disp = 1;
+int logLevel = loguru::Verbosity_7;
+unsigned short vid = 0x1a79;
+unsigned short pid = 0x6210;
+
+////////////////////////////////////////////////
+
+MainParameters mParams;
+PumpStatus ps { };
+PumpReader pumpReader;
+UsbDevice readData;
+HistoryData hD;
+
+std::string readStatus; 		// our info output string
+time_t now = time(NULL); // actual time
+
+int readStick(void);
+std::mutex readStick_mutex;
+int read_status = 0;
+
+/**
+ * ProgramStatus:
+ * 0: idle - no stick
+ * 10: idle
+ * 15: read in progress
+ * 30: Stick not found
+ * 31: stick in unknown state
+ * 32: pump not found
+ * 33: read error
+ * 40: all ok, data read.
+ *
+ */
+int programStatus = 0;
+int noStickFoundCounter = 0;
+
+int processArgs(int argc, char* argv[]);
+int startUp();
+bool timeToCheck();
+
+
+
+time_t pollForStick = time(NULL);
+time_t pollForPump = time(NULL);
+
+int main(int argc, char* argv[]) {
+	// process arguments
+	programStatus = processArgs(argc, argv);
+	// Start the logging facility
+	loguru::init(argc, argv);
+	loguru::g_stderr_verbosity = logLevel;
+
+	// Say Hello
+	LOG_F(INFO, "640g Reader. Version: %d.%d", VERSION_MAJOR, VERSION_MINOR);
+	LOG_F(INFO, "Press <ctrl>-c for exit");
+
+	std::thread readerThread(readStick);
+
+	startUp();
+	if (disp == 1) {
+
+		// TODO Display
+	}
+
+//	int v [] = {100,122, 133, 155, 157, 90, 50};
+//
+//	ps.bglVals = v;
+//	ps.valCount = 7;
+//	ps.readStatus =1;
+
+	/*
+	 * Main loop (non-blocking):
+	 * 1. if status is < 10: stick not initialized
+	 * 2. if status is 10: idle, checking if sleep time is over
+	 * 3. if status is 20: read in progress.
+	 * 4. if status is 9: stick not found... sleep
+	 * 5. if status is 8: pump not found... sleep
+	 */
+	while (1) {
+		if (disp == 1) {
+			/* Periodically call the lv_task handler.
+			 * It could be done in a timer interrupt or an OS task too.*/
+
+		}
+		usleep(10 * 1000); /*Just to let the system breath*/
+		if (programStatus < 10) {  // idle
+			if (timeToCheck()) {
+				readStatus = mParams.statustexts[1];
+				LOG_F(INFO, mParams.statustexts[1]);
+				programStatus = 10;
+			}
+		}
+		switch (programStatus) {
+		case 7: {	// read ok. output status text with remaining time
+			char buf[sizeof(mParams.statustexts[11]) * 2 + 20]; // FIXME: THIS IS QUICK AN DIRTY!
+			sprintf(buf, mParams.statustexts[11], pollForPump - time(NULL));
+			readStatus = buf;
+
+			break;
+		}
+		case 8: {	// no pump found, output status text with remaining time
+			char buf[sizeof(mParams.statustexts[6]) * 2 + 20]; // FIXME: THIS IS QUICK AN DIRTY!
+			sprintf(buf, mParams.statustexts[6], pollForPump - time(NULL));
+			readStatus = buf;
+			break;
+		}
+		case 9: { 	// no stick found, output status text with remaining time
+			char buf[sizeof(mParams.statustexts[2]) * 2 + 20]; // FIXME: THIS IS QUICK AN DIRTY!
+			sprintf(buf, mParams.statustexts[2], pollForPump - time(NULL));
+			readStatus = buf;
+			break;
+		}
+		case 30: { // stick not found (returned from reader thread) reset timer and reset text
+			LOG_F(ERROR, "Error Stick not found. Sleeping for %d seconds...",
+					mParams.pollStickTime);
+			noStickFoundCounter++;
+			if (noStickFoundCounter > mParams.noStickResetCount) {
+				noStickFoundCounter=0;
+				programStatus = 31;
+				break;
+			}
+			programStatus = 9;  // stick not found status
+			pollForPump = time(NULL) + mParams.pollStickTime;
+			break;
+		}
+		case 31: { // Stick in unknown state
+			LOG_F (INFO, "Powercycling - just to be sure...");
+			// FIXME: this is quick and dirty. for the raspberry pi (ALL BUT ZERO and ZERO/W) we do a powercycling for all usb ports.
+			// FIXME: do a powercycling just for the port where the reader is connected...
+
+
+			std::system("./uhubctl -a 2");
+			sleep(10);
+			programStatus = 9;
+
+			break;
+		}
+		case 32: {	// pump not found... trying again later...
+			LOG_F(INFO, "Pump not near. Sleeping for %d seconds...",
+					mParams.pollPumpTime);
+			pollForPump = time(NULL) + mParams.pollPumpTime;
+			programStatus = 8;		// Pump not found
+
+			break;
+		}
+
+		case 33: { // read error... try again?
+			// FIXME retry management
+			programStatus = 30;
+			break;
+		}
+
+		case 40: {  // everything fine!
+			LOG_F(INFO, "Read ok. Sleeping for %d seconds...", mParams.pollPumpTime);
+			programStatus = 7;
+
+//			bgl = ps.sensorBGL;
+			if (disp == 1) {
+				ps.readStatus = 1;
+				int pos = 0;
+				std::vector <int> vals;
+				if (hD.events.size()) {
+
+					for (unsigned int i = 0; i < hD.events.size(); i++) {
+						time_t showperiod = time(0) - (24 * 3600); // we want 24h
+						if (showperiod - hD.events.at(i).eventTime < 0) {
+							vals.push_back(hD.events.at(i).sg);
+							pos++;
+
+						}
+					}
+					ps.valCount=vals.size();
+					ps.bglVals = vals.data();
+
+
+				}
+
+
+//				fill_values(readData.getPumpStatus(), readStatus.c_str());
+			}
+			pollForPump = time(NULL) + mParams.pollPumpTime;
+
+			break;
+		}
+
+		default:
+			break;
+		}
+	}
+	// FIXME: cleanup
+
+	// wait for readerthread to finish...
+	readerThread.join();
+
+	return 0;
+
+}
+
+int processArgs(int argc, char* argv[]) {
 	return 0;
 }
+
+
+
+bool timeToCheck() {
+
+	if (pollForPump - time(NULL) > 0) {
+		return false;
+	};
+	return true;
+}
+
+int startUp() {
+	readStatus = mParams.statustexts[0];
+	return 0;
+}
+
+
+// the read process
+/*
+ * return values:
+ * 30: Stick not found
+ * 31: stick in unknown state
+ * 32: pump not found
+ * 33: read error
+ * 40: all ok, data read.
+ *
+ */
+int reading(void) {
+	readStick_mutex.lock();
+	int result = pumpReader.readingInitializeStick(mParams);
+	if (result == -1) {
+		// stick not found
+		readStick_mutex.unlock();
+		return 30;
+	}
+	readStick_mutex.unlock();
+	if (result == -99) {
+		// stick in unknown state;
+		readStick_mutex.lock();
+		readStatus = mParams.statustexts[4];
+		readStick_mutex.unlock();
+		return 31;
+	}
+	readStick_mutex.lock();
+	readStatus = mParams.statustexts[5];
+	readStick_mutex.unlock();
+	result = pumpReader.readingFindPump();
+	if (result == -2) {
+		// pump not found
+		readStick_mutex.unlock();
+		return 32;
+	}
+	readStick_mutex.lock();
+	readStatus = mParams.statustexts[7];
+	result = pumpReader.readingStartDownload(&ps, &hD);
+	LOG_F (8, "HD EVENT SIZE %d", hD.events.size());
+	readStick_mutex.unlock();
+	if (result == -4) {
+		// read error retry?
+		readStick_mutex.lock();
+		readStatus = mParams.statustexts[8];
+		readStick_mutex.unlock();
+		return 33;
+	}
+	readStick_mutex.lock();
+	readStatus = mParams.statustexts[10];
+	readStick_mutex.unlock();
+	result = pumpReader.readingCloseConnection();
+	readStick_mutex.lock();
+	readStatus = mParams.statustexts[0];
+	readStick_mutex.unlock();
+	return 40;
+}
+
+int readStick(void) {
+
+	while (1) {
+		sleep(1);
+		if (programStatus == 10) {
+			programStatus = 15;
+			int result = reading();
+			readStick_mutex.lock();
+			programStatus = result;
+			readStick_mutex.unlock();
+		}
+	}
+}
+
