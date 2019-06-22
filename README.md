@@ -6,7 +6,36 @@ Software to read the CBG values from a Medtronic MiniMed 640G pump.
 
 ### what is this
 
+This software is intendet to use with a Medronic MiniMed 640G pump. If you do not know what this is, you do not need this software!
+
+With this little peace of software you are able the read the CGM status from a 640g pump. The values are shown in a console.
+
+The software is just testet in linux (it will not run in windows, because the lib-usb library needs to be changed...)
+
+**It will run under Raspbian**
+
+
+
 ## HowTo:
+
+1. install raspbian
+2. install dependencies:
+
+** TODO ** 
+
+3. get the software
+
+** TODO **
+
+4. compile 
+
+** TODO ** 
+
+5. create startup script
+
+** TODO **
+
+
 
 ## Q&A: 
 
