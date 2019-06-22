@@ -3,7 +3,7 @@
 Software to read the CBG values from a Medtronic MiniMed 640G pump.
 
 
-**DISCLAIMER: I am not affiliated with Medtronic or any other company. This is just a private project. I do not guarantee that the shown values are correct. DO NOT TRUST THE SHOWN VALUES**
+**DISCLAIMER: I am not affiliated with Medtronic or any other company. This is just a private project. I do not guarantee that the shown values are correct. DO NOT TRUST THE SHOWN VALUES!!**
 
 
 ## Overview
