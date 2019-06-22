@@ -12,7 +12,9 @@ Software to read the CBG values from a Medtronic MiniMed 640G pump.
 
 This software is intendet to use with a Medronic MiniMed 640G pump. If you do not know what this is, you do not need this software!
 
-With this little peace of software you are able the read the CGM status from a 640g pump. The values are shown in a console.
+With this little peace of software you are able the read the CGM status from a 640g pump on any linux machine (especially on a Raspberry Pi with raspbian). The values are shown in a console. In a next step the values will be readable via an JSON object.
+
+
 
 The software is just testet in linux (it will not run in windows, because the lib-usb library needs to be changed...)
 
@@ -21,6 +23,21 @@ The software is just testet in linux (it will not run in windows, because the li
 
 
 ## HowTo:
+
+Prerequisites:
+
+Hardware:
+
+- Linux Machine 
+- Ascensia Contour Next Link 2.4 (see: https://www.diabetes.ascensia.at/produkte/contour-next-link-2-4/) 
+- MiniMed 640G Insulin Pump (see: https://www.medtronic-diabetes.at/minimed-produkte/minimed-640g-insulinpumpe)
+
+
+Software:
+
+- The Contour Next Link 2.4 and the MiniMed pump need to be connected (linked) with each other. 
+
+
 
 1. install raspbian
 2. install dependencies:
