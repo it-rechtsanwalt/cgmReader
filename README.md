@@ -57,5 +57,5 @@ so help is welcome!
 
 ## THANKS TO
 
-- @github/pazaan for his grate work - see: (https://github.com/pazaan/decoding-contour-next-link)
-- @github/jkirk - you where very supportive!
+- @pazaan for his grate work - see: (https://github.com/pazaan/decoding-contour-next-link)
+- @jkirk - you where very supportive!
