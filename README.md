@@ -8,7 +8,7 @@ Software to read the CBG values from a Medtronic MiniMed 640G pump.
 
 ## HowTo:
 
-## QA: 
+## Q&A: 
 
 ### why am I doing this?
 
