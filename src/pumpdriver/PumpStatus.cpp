@@ -24,18 +24,10 @@
  */
 
 
-//#include "PumpStatus.h"
-//
-//PumpStatus::PumpStatus() {
-//	// TODO Auto-generated constructor stub
-//
-//}
-//
-//PumpStatus::~PumpStatus() {
-//	// TODO Auto-generated destructor stub
-//}
+#include "PumpStatus.h"
 
-/*
+
+
 std::string PumpStatus::trendArrowString() {
 		switch (trendArrow) {
 		case 0x60:{
@@ -59,10 +51,8 @@ std::string PumpStatus::trendArrowString() {
 		case 0x00:{
 			return "3 arrows down";
 		}
-
-
 		default: break;
 		}
 		return "not initialized";
 	}
-*/
+

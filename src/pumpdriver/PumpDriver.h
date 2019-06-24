@@ -83,7 +83,7 @@ private:
 	MinimedCommands minimedCommands;
 	Hlp hlp;
 	unsigned int sleep_duration = 2000;
-	int retries = 10;
+	int retries = 30;
 
 };
 

@@ -27,12 +27,12 @@
 #ifndef PUMPSTATUS_H_
 #define PUMPSTATUS_H_
 
-//#include <string>
+#include <string>
 //#include "HistoryData.h"
 
 
-struct PumpStatus {
-
+class PumpStatus {
+public:
 	int readStatus ;
 	float currentBasalRate ;
 	float tempBasalRate ;
@@ -79,7 +79,7 @@ struct PumpStatus {
 	 */
 	unsigned char sensorStatus ;
 
-//	std::string trendArrowString();
+	std::string trendArrowString();
 
 };
 ///*

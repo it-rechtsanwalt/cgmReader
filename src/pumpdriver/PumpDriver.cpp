@@ -166,7 +166,7 @@ int PumpDriver::channelNegotiation() {
 			if (bmsg.type == 0x80) {	// second answer must be a 0x80 message!
 				if (answer.size() > 13) {
 					if (answer[43] == usbDevice->radioChannel) {
-						LOG_F(INFO, "Channel negotiated with Channel ID %x" + usbDevice->radioChannel);
+						LOG_F(INFO, "Channel negotiated with Channel ID %d" + usbDevice->radioChannel);
 						usbDevice->radiorssi = answer[26];
 						LOG_F(INFO, "Signal Strength: %d%%", usbDevice->getSignalStrengh());
 
@@ -222,7 +222,7 @@ int PumpDriver::getPumpTime() {
 	} else {
 		answer = saveRead();
 		if (answer.empty())
-			return 0;
+			return 1;
 		MimimedMessage mmsg;
 		MinimedBinaryMessage bmsg;
 		MinimedSendMessageRequest smrq;
@@ -273,10 +273,7 @@ int PumpDriver::downloadData(PumpStatus * ps) {
 		LOG_F(INFO, "Received Pump Status:");
 		LOG_F(INFO, "----------------------------------------------------------------------------");
 		LOG_F(INFO, "Sensor BGL / active Insulin              : %d / %f", ps->sensorBGL, ps->activeInsulin);
-		LOG_F(INFO, "Trend                                    : N.A. ");
-
-		//		LOG_F(INFO, "Trend                                    : %s",
-//				usbDevice->getPumpStatus()->trendArrowString().c_str());
+		LOG_F(INFO, "Trend                                    : %s", ps->trendArrowString().c_str());
 		LOG_F(INFO, "Insulin units remaining / batteryLevel(%): %d / %d", ps->insulinUnitsRemaining, ps->batteryLevelPercentage);
 		LOG_F(INFO, "Current Basalrate                        : %f", ps->currentBasalRate);
 		LOG_F(INFO, "Sensor Time                              : %d", ps->sensorBGLTimeStamp);
@@ -364,13 +361,13 @@ void PumpDriver::closeConnection() {
 void PumpDriver::exitPassthroughMode() {
 	unsigned char buf2[] = { consts.STX, 'W', '|' };
 	usbDriver.sendCommand(buf2, 3);
-	std::vector<unsigned char> answer = usbDriver.read();
+	std::vector<unsigned char> answer = saveRead();
 	unsigned char buf3[] = { consts.STX, 'Q', '|' };
 	usbDriver.sendCommand(buf3, 3);
-	answer = usbDriver.read();
+	answer = saveRead();
 	unsigned char buf4[] = { consts.STX, '0', '|' };
 	usbDriver.sendCommand(buf4, 3);
-	answer = usbDriver.read();
+	answer = saveRead();
 
 }
 
@@ -378,7 +375,7 @@ void PumpDriver::exitControlMode() {
 
 	unsigned char buf[] = { consts.EOT };
 	usbDriver.send(buf, 1);
-	std::vector<unsigned char> answer = usbDriver.read();
+	std::vector<unsigned char> answer = saveRead();
 
 	// TODO check for correct answer: enq;
 }

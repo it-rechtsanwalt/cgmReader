@@ -189,7 +189,8 @@ int main(int argc, char* argv[]) {
 
 		case 33: { // read error... try again?
 			// FIXME retry management
-			programStatus = 30;
+			programStatus = 9;  // stick not found status
+			pollForPump = time(NULL) + mParams.pollStickTime;
 			break;
 		}
 
@@ -294,6 +295,12 @@ int reading(void) {
 		readStick_mutex.unlock();
 		return 32;
 	}
+	if (result == -3){
+		// read error!
+		readStick_mutex.unlock();
+		return 33;
+	}
+
 	readStick_mutex.lock();
 	readStatus = mParams.statustexts[7];
 	result = pumpReader.readingStartDownload(&ps, &hD);

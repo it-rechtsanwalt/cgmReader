@@ -23,10 +23,7 @@
  * ============================================================================
  */
 
-
-
 #include "PumpReader.h"
-
 
 PumpReader::PumpReader() {
 
@@ -38,9 +35,6 @@ PumpReader::~PumpReader() {
 
 	// TODO Auto-generated destructor stub
 }
-
-
-
 
 void PumpReader::powerCircle(void) {
 
@@ -71,8 +65,6 @@ int PumpReader::readingInitializeStick(MainParameters & mParams) {
 		return -99;
 	}
 
-
-
 	return 0;
 }
 
@@ -81,7 +73,7 @@ int PumpReader::readingFindPump() {
 	pumpDriver.openPumpConnection();
 	pumpDriver.enterPassThroughMode();
 	pumpDriver.readInfo();
-	int status =  pumpDriver.channelNegotiation();
+	int status = pumpDriver.channelNegotiation();
 	if (status == 0) {
 
 		pumpDriver.exitPassthroughMode();
@@ -90,23 +82,27 @@ int PumpReader::readingFindPump() {
 		return -2;
 	}
 	pumpDriver.enteringEHSM();
-	pumpDriver.getPumpTime();
+	if (pumpDriver.getPumpTime() != 0) {
+		pumpDriver.closeEHSM();
+		pumpDriver.exitPassthroughMode();
+		pumpDriver.exitControlMode();
+		pumpDriver.closeDriver();
+		return -3;
+	};
 	return 0;
 
 }
 
-
 int PumpReader::readingStartDownload(PumpStatus * ps, HistoryData * hD) {
-return pumpDriver.downloadData(ps);
+	return pumpDriver.downloadData(ps);
 	/*FIXME if we want to get the history data: you need this :
-	if (pumpDriver.downloadData(ps)) {
-		LOG_F(ERROR, "Download error. retrying...");
-		return -4;
-	}
-return pumpDriver.downloadHistory(ps, hD);
-*/
+	 if (pumpDriver.downloadData(ps)) {
+	 LOG_F(ERROR, "Download error. retrying...");
+	 return -4;
+	 }
+	 return pumpDriver.downloadHistory(ps, hD);
+	 */
 }
-
 
 int PumpReader::readingCloseConnection() {
 	//FIXME: check state and close correct
@@ -118,5 +114,4 @@ int PumpReader::readingCloseConnection() {
 
 	return 0;
 }
-
 
