@@ -33,7 +33,11 @@
 
 class PumpStatus {
 public:
-	int readStatus ;
+	/* Readstatus:
+	 * 1: ok
+	 * 0: not ok
+	 */
+	int readStatus;
 	float currentBasalRate ;
 	float tempBasalRate ;
 	int tempBasalPercentage ;

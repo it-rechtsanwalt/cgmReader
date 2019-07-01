@@ -23,12 +23,10 @@
  * ============================================================================
  */
 
-
 #include <iostream>
 #include "utils/loguru.hpp"
 #include "pumpdriver/PumpReader.h"
 #include <future>
-
 
 #include <unistd.h>
 #include <time.h>
@@ -78,10 +76,7 @@ int programStatus = 0;
 int noStickFoundCounter = 0;
 
 int processArgs(int argc, char* argv[]);
-int startUp();
 bool timeToCheck();
-
-
 
 time_t pollForStick = time(NULL);
 time_t pollForPump = time(NULL);
@@ -97,36 +92,21 @@ int main(int argc, char* argv[]) {
 	LOG_F(INFO, "640g Reader. Version: %d.%d", VERSION_MAJOR, VERSION_MINOR);
 	LOG_F(INFO, "Press <ctrl>-c for exit");
 
+	//create "the" reader Thread
 	std::thread readerThread(readStick);
+	readStatus = mParams.statustexts[0];
 
-	startUp();
-	if (disp == 1) {
-
-		// TODO Display
-	}
-
-//	int v [] = {100,122, 133, 155, 157, 90, 50};
-//
-//	ps.bglVals = v;
-//	ps.valCount = 7;
-//	ps.readStatus =1;
-
-	/*
-	 * Main loop (non-blocking):
+	/*Main loop (non-blocking):
 	 * 1. if status is < 10: stick not initialized
 	 * 2. if status is 10: idle, checking if sleep time is over
 	 * 3. if status is 20: read in progress.
 	 * 4. if status is 9: stick not found... sleep
 	 * 5. if status is 8: pump not found... sleep
+	 * 6. if status is 7: read ok, waiting for next read... sleep
 	 */
 	while (1) {
-		if (disp == 1) {
-			/* Periodically call the lv_task handler.
-			 * It could be done in a timer interrupt or an OS task too.*/
-
-		}
-		usleep(10 * 1000); /*Just to let the system breath*/
 		if (programStatus < 10) {  // idle
+			// check if it is time to read values
 			if (timeToCheck()) {
 				readStatus = mParams.statustexts[1];
 				LOG_F(INFO, mParams.statustexts[1]);
@@ -158,7 +138,7 @@ int main(int argc, char* argv[]) {
 					mParams.pollStickTime);
 			noStickFoundCounter++;
 			if (noStickFoundCounter > mParams.noStickResetCount) {
-				noStickFoundCounter=0;
+				noStickFoundCounter = 0;
 				programStatus = 31;
 				break;
 			}
@@ -167,13 +147,12 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 		case 31: { // Stick in unknown state
-			LOG_F (INFO, "Powercycling - just to be sure...");
+			LOG_F(INFO, "Powercycling - just to be sure...");
 			// FIXME: this is quick and dirty. for the raspberry pi (ALL BUT ZERO and ZERO/W) we do a powercycling for all usb ports.
 			// FIXME: do a powercycling just for the port where the reader is connected...
 
-
 			std::system("./uhubctl -a 2");
-			sleep(10);
+			sleep(15);
 			programStatus = 9;
 
 			break;
@@ -195,31 +174,29 @@ int main(int argc, char* argv[]) {
 		}
 
 		case 40: {  // everything fine!
-			LOG_F(INFO, "Read ok. Sleeping for %d seconds...", mParams.pollPumpTime);
+			LOG_F(INFO, "Read ok. Sleeping for %d seconds...",
+					mParams.pollPumpTime);
 			programStatus = 7;
 
-//			bgl = ps.sensorBGL;
 			if (disp == 1) {
 				ps.readStatus = 1;
-				int pos = 0;
-				std::vector <int> vals;
-				if (hD.events.size()) {
 
-					for (unsigned int i = 0; i < hD.events.size(); i++) {
-						time_t showperiod = time(0) - (24 * 3600); // we want 24h
-						if (showperiod - hD.events.at(i).eventTime < 0) {
-							vals.push_back(hD.events.at(i).sg);
-							pos++;
-
-						}
-					}
-					ps.valCount=vals.size();
-					ps.bglVals = vals.data();
-
-
-				}
-
-
+				// TODO process events
+//				int pos = 0;
+//				std::vector<int> vals;
+//				if (hD.events.size()) {
+//					for (unsigned int i = 0; i < hD.events.size(); i++) {
+//						time_t showperiod = time(0) - (24 * 3600); // we want 24h
+//						if (showperiod - hD.events.at(i).eventTime < 0) {
+//							vals.push_back(hD.events.at(i).sg);
+//							pos++;
+//					}
+//					}
+//					ps.valCount = vals.size();
+//					ps.bglVals = vals.data();
+//
+//				}
+//
 //				fill_values(readData.getPumpStatus(), readStatus.c_str());
 			}
 			pollForPump = time(NULL) + mParams.pollPumpTime;
@@ -230,6 +207,10 @@ int main(int argc, char* argv[]) {
 		default:
 			break;
 		}
+		// we only show recent values. so: if last successful is more than 10 minutes ago: reset the provided data:
+
+		usleep(10 * 1000); /*Just to let the system breath*/
+
 	}
 	// FIXME: cleanup
 
@@ -244,8 +225,6 @@ int processArgs(int argc, char* argv[]) {
 	return 0;
 }
 
-
-
 bool timeToCheck() {
 
 	if (pollForPump - time(NULL) > 0) {
@@ -253,12 +232,6 @@ bool timeToCheck() {
 	};
 	return true;
 }
-
-int startUp() {
-	readStatus = mParams.statustexts[0];
-	return 0;
-}
-
 
 // the read process
 /*
@@ -295,7 +268,7 @@ int reading(void) {
 		readStick_mutex.unlock();
 		return 32;
 	}
-	if (result == -3){
+	if (result == -3) {
 		// read error!
 		readStick_mutex.unlock();
 		return 33;
@@ -304,7 +277,7 @@ int reading(void) {
 	readStick_mutex.lock();
 	readStatus = mParams.statustexts[7];
 	result = pumpReader.readingStartDownload(&ps, &hD);
-	LOG_F (8, "HD EVENT SIZE %d", hD.events.size());
+	LOG_F(8, "HD EVENT SIZE %d", hD.events.size());
 	readStick_mutex.unlock();
 	if (result == -4) {
 		// read error retry?
