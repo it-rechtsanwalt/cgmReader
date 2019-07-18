@@ -29,6 +29,8 @@
 #define MAINPARAMETERS_H_
 
 
+#include <string>
+
 /*
  * Class for calling parameters
  */
@@ -38,9 +40,15 @@ public:
 	virtual ~MainParameters();
 
 	long pollStickTime = 10;  // Seconds  - polling for the device plugged in
-	long pollPumpTime = 20;  // Seconds  - polling for the pump
+	long pollPumpTime = 60;  // Seconds  - polling for the pump
 
 
+	/*
+	 * Server Settings
+	 */
+	bool JsonServerEnable = true; // start json server
+	int  JsonServerPort = 8888; // json server port
+	std::string JsonServerKey = "1234"; // Json server key
 
 	/*
 	 * try powercycling if stick fails? 0 = disabled, 1 = enabled
