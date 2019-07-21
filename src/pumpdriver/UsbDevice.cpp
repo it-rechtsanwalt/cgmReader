@@ -49,7 +49,7 @@ void UsbDevice::setHMAC() {
 	hm.append(stickSerial);
 	hm.append(HMAC_PADDING);
 	unsigned char sha[64];
-	LOG_F(9, "String for HMAC: %s", hm.c_str());
+	LOG_F(5, "String for HMAC: %s", hm.c_str());
 	hmac = getSHA256(hm.c_str(), &sha[0]);
 }
 

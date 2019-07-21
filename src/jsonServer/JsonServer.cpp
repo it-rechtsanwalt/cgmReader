@@ -141,7 +141,7 @@ int JsonServer::startServer(std::string id, int port, StatusData * sdata) {
 		if (fd < 0) {
 			LOG_F(ERROR, "Error accepting client");
 		}
-		LOG_F(7, "Client from %s connected.", inet_ntoa(client.sin_addr));
+		LOG_F(1, "Client from %s connected.", inet_ntoa(client.sin_addr));
 		reply(fd);
 		int repl = close(fd);
 		if (repl == -1) {

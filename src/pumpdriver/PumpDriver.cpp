@@ -65,7 +65,7 @@ int PumpDriver::getStickData() {
 }
 
 void PumpDriver::openPumpConnection() {
-	LOG_F(INFO, "Opening Pump Connection...");
+	LOG_F(1, "Opening Pump Connection...");
 	unsigned char buf[] = { consts.NAK };
 	usbDriver.send(buf, 1);
 	std::vector<unsigned char> answer = usbDriver.read();
@@ -85,10 +85,10 @@ void PumpDriver::openPumpConnection() {
 }
 
 void PumpDriver::enterPassThroughMode() {
-	LOG_F(INFO, "Entering PassThroughMode...");
+	LOG_F(1, "Entering PassThroughMode...");
 	std::vector<unsigned char> message;
 	MinimedBinaryMessage bmsg;
-	LOG_F(4, "HMAC: %s", hlp.string_to_hex(usbDevice->hmac.c_str()).c_str());
+	LOG_F(3, "HMAC: %s", hlp.string_to_hex(usbDevice->hmac.c_str()).c_str());
 
 	message = bmsg.getMessage(usbDevice, commands.OPEN_CONNECTION, (unsigned char *) &usbDevice->hmac.c_str()[0], 32);
 	usbDriver.send(message.data(), message.size());
@@ -100,7 +100,7 @@ void PumpDriver::enterPassThroughMode() {
 }
 
 void PumpDriver::readInfo() {
-	LOG_F(INFO, "Reading Info...");
+	LOG_F(1, "Reading Info...");
 	// getting the info for linkmac and pumpmac:
 	MinimedBinaryMessage bmsg;
 	std::vector<unsigned char> message;
@@ -120,8 +120,8 @@ void PumpDriver::readInfo() {
 	tmp.assign(payload.begin() + 8, payload.begin() + 16); // the pumpmac is found in the next 8 byte of the answer (unsigned long long)
 	l = hlp.chartolong(tmp);
 	usbDevice->pumpMac = l;
-	LOG_F(INFO, "LinkMac: %llu", usbDevice->linkMac);
-	LOG_F(INFO, "PumpMac: %llu", usbDevice->pumpMac);
+	LOG_F(2, "LinkMac: %llu", usbDevice->linkMac);
+	LOG_F(2, "PumpMac: %llu", usbDevice->pumpMac);
 
 	// request link key:
 	message = bmsg.getMessage(usbDevice, commands.REQUEST_LINK_KEY, NULL, 0);
@@ -132,11 +132,11 @@ void PumpDriver::readInfo() {
 
 	payload = bmsg.decode(answer);
 	usbDevice->getLinkKey(payload);
-	LOG_F(INFO, "LinkKey: %s", hlp.char_to_hex(usbDevice->key, 16).c_str());
+	LOG_F(1, "LinkKey: %s", hlp.char_to_hex(usbDevice->key, 16).c_str());
 }
 
 int PumpDriver::channelNegotiation() {
-	LOG_F(INFO, "Channel Negotiation...");
+	LOG_F(1, "Channel Negotiation...");
 
 	char channels[] = { 0x14, 0x11, 0x0e, 0x17, 0x1a };
 
@@ -151,7 +151,7 @@ int PumpDriver::channelNegotiation() {
 		message = mmsg.buildMessage(0x03, message);
 		message = bmsg.getMessage(usbDevice, commands.SEND_MESSAGE, message.data(), message.size());
 		usbDevice->incMinimedSequenceNumber();
-		LOG_F(INFO, "Trying channel %d", usbDevice->radioChannel);
+		LOG_F(2, "Trying channel 0x%x", usbDevice->radioChannel);
 		usbDriver.send(message.data(), message.size());
 		std::vector<unsigned char> answer = usbDriver.read();
 		if (answer.empty())
@@ -166,14 +166,14 @@ int PumpDriver::channelNegotiation() {
 			if (bmsg.type == 0x80) {	// second answer must be a 0x80 message!
 				if (answer.size() > 13) {
 					if (answer[43] == usbDevice->radioChannel) {
-						LOG_F(INFO, "Channel negotiated with Channel ID %d" + usbDevice->radioChannel);
+						LOG_F(2, "Channel negotiated with Channel ID %d" + usbDevice->radioChannel);
 						usbDevice->radiorssi = answer[26];
-						LOG_F(INFO, "Signal Strength: %d%%", usbDevice->getSignalStrengh());
+						LOG_F(2, "Signal Strength: %d%%", usbDevice->getSignalStrengh());
 
 						return usbDevice->radioChannel;
 					}
 				}
-				LOG_F(INFO, "No pump at channel %x found.", usbDevice->radioChannel);
+				LOG_F(2, "No pump at channel 0x%x found.", usbDevice->radioChannel);
 			}
 		}
 
@@ -184,7 +184,7 @@ int PumpDriver::channelNegotiation() {
 }
 
 int PumpDriver::enteringEHSM() {
-	LOG_F(INFO, "Entering EHSM...");
+	LOG_F(1, "Entering EHSM...");
 	std::vector<unsigned char> payload;
 	payload.push_back(0x00);
 
@@ -207,7 +207,7 @@ int PumpDriver::enteringEHSM() {
 
 int PumpDriver::getPumpTime() {
 
-	LOG_F(INFO, "Getting Pump Time");
+	LOG_F(1, "Getting Pump Time");
 	std::vector<unsigned char> payload;
 	// send the time request and check for 0x081 response
 	std::vector<unsigned char> answer = sendMessage(minimedCommands.TIME_REQUEST, { });
@@ -231,15 +231,15 @@ int PumpDriver::getPumpTime() {
 		answer = smrq.decodeMessage(usbDevice, answer); // decrypt the payload out of the minimed message
 		std::string s = hlp.extractTime(usbDevice, answer);
 
-		LOG_F(INFO, "Actual pumptime: %s", s.c_str());
-		LOG_F(5, "Actual pumpOffset / rtc : %ul / %ul", usbDevice->pumpTimeOFFSET, usbDevice->pumpTimeRTC);
+		LOG_F(2, "Actual pumptime: %s", s.c_str());
+		LOG_F(2, "Actual pumpOffset / rtc : %ul / %ul", usbDevice->pumpTimeOFFSET, usbDevice->pumpTimeRTC);
 		return 0;
 	}
 
 }
 
 int PumpDriver::downloadData(PumpStatus * ps) {
-	LOG_F(INFO, "Download Data");
+	LOG_F(1, "Download Data");
 	std::vector<unsigned char> payload;
 	// send the time request and check for 0x081 response
 	std::vector<unsigned char> answer = sendMessage(minimedCommands.READ_PUMP_STATUS_REQUEST, { });
@@ -288,7 +288,7 @@ int PumpDriver::downloadData(PumpStatus * ps) {
 }
 
 int PumpDriver::downloadHistory(PumpStatus * ps, HistoryData * hD) {
-	LOG_F(INFO, "Download Pump History");
+	LOG_F(1, "Download Pump History");
 	int history = 24*3600; // we want the last 24 hours, beside there is an event stored...
 	if (hD->events.size()) {
 		history = time(0) - hD->events.at(hD->events.size()-1).eventTime;			// ... in this case we want the history to the last event
@@ -299,25 +299,25 @@ int PumpDriver::downloadHistory(PumpStatus * ps, HistoryData * hD) {
 
 		return res;
 	}
-	LOG_F(INFO, "Download completed. Received %d packets", pumpHistory.segments.size());
-	LOG_F(INFO, "Download Sensor History");
+	LOG_F(2, "Download completed. Received %d packets", pumpHistory.segments.size());
+	LOG_F(2, "Download Sensor History");
 	res = downloadHistoryData(3, history, ps);
 	if (res != 0) {
 		//FIXME: Handle ungraceful return!
 			return res;
 	}
-	LOG_F(INFO, "Download completed. Received %d packets", pumpHistory.segments.size());
+	LOG_F(2, "Download completed. Received %d packets", pumpHistory.segments.size());
 
-	LOG_F(6, "______________________________________________________________________________________________________________");
-	LOG_F(6, "Output: ");
-	LOG_F(6, "--------------------------------- RECEIVED MESSAGES: ");
+	LOG_F(1, "______________________________________________________________________________________________________________");
+	LOG_F(1, "Output: ");
+	LOG_F(1, "--------------------------------- RECEIVED MESSAGES: ");
 
 	for (unsigned int i = 0; i < pumpHistory.segments.size(); i++) {
-		LOG_F(6, hlp.toHexString(pumpHistory.segments[i]).c_str());
+		LOG_F(1, hlp.toHexString(pumpHistory.segments[i]).c_str());
 	}
-	LOG_F(6, "______________________________________________________________________________________________________________");
-	LOG_F(6, "Output: ");
-	LOG_F(6, "--------------------------------- DECODED EVENTS: ");
+	LOG_F(1, "______________________________________________________________________________________________________________");
+	LOG_F(1, "Output: ");
+	LOG_F(1, "--------------------------------- DECODED EVENTS: ");
 
 	for (unsigned int i = 0; i < pumpHistory.segments.size(); i++) {
 		if (processHistory(pumpHistory.segments[i], hD) == 0) {
@@ -328,7 +328,7 @@ int PumpDriver::downloadHistory(PumpStatus * ps, HistoryData * hD) {
 
 	}
 	if (hD->events.size()) {
-		LOG_F(INFO, "HD EVENT SIZE %d", hD->events.size());
+		LOG_F(1, "HD EVENT SIZE %d", hD->events.size());
 
 	}
 
@@ -338,7 +338,7 @@ int PumpDriver::downloadHistory(PumpStatus * ps, HistoryData * hD) {
 }
 
 void PumpDriver::closeEHSM() {
-	LOG_F(INFO, "Closing EHSM Connection");
+	LOG_F(1, "Closing EHSM Connection");
 	std::vector<unsigned char> answer = sendMessage(minimedCommands.HIGH_SPEED_MODE_COMMAND, { 0x01 });
 	if (answer.empty())
 		return;
@@ -437,7 +437,7 @@ int PumpDriver::downloadHistoryData(char type, int historyPeriod, PumpStatus * p
 	struct std::tm *timeinfo = std::localtime(&now);
 	int offset = timeinfo->tm_gmtoff;
 	int rtc = now + offset - (int) usbDevice->pumpTimeOFFSET - 946684800 - historyPeriod;
-	LOG_F(5, "Request  History from: %ul", rtc);
+	LOG_F(4, "Request  History from: %ul", rtc);
 	payload.push_back(*((char*) &rtc + 3));
 	payload.push_back(*((char*) &rtc + 2));
 	payload.push_back(*((char*) &rtc + 1));
@@ -454,7 +454,7 @@ int PumpDriver::downloadHistoryData(char type, int historyPeriod, PumpStatus * p
 	payload.push_back(0x00); // End-of-Payload
 	payload.push_back(0x00); // End-of-Payload
 
-	LOG_F(INFO, " ------------------- History Message:  %s", hlp.toHexString(payload).c_str());
+	LOG_F(1, " ------------------- History Message:  %s", hlp.toHexString(payload).c_str());
 	// send the pump history request and check for 0x081 response
 	std::vector<unsigned char> answer = sendMessage(minimedCommands.READ_HISTORY_INFO_REQUEST, payload);
 	if (answer.empty())
@@ -574,7 +574,7 @@ int PumpDriver::downloadHistoryData(char type, int historyPeriod, PumpStatus * p
 
 				}
 				if (packetCount % 5 == 0) {	// prompt every 5 packages that we are still working
-					LOG_F(INFO, "History: Received %d packets", packetCount);
+					LOG_F(1, "History: Received %d packets", packetCount);
 
 				}
 

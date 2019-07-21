@@ -41,9 +41,9 @@ using namespace std;
 
 //////////////// STATICS ////////////////////
 const int VERSION_MAJOR = 0;
-const int VERSION_MINOR = 1;
+const int VERSION_MINOR = 2;
 int disp = 1;
-int logLevel = loguru::Verbosity_7;
+int logLevel = loguru::Verbosity_INFO;
 unsigned short vid = 0x1a79;
 unsigned short pid = 0x6210;
 
