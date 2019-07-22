@@ -39,8 +39,8 @@ public:
 	MainParameters();
 	virtual ~MainParameters();
 
-	long pollStickTime = 10;  // Seconds  - polling for the device plugged in
-	long pollPumpTime = 60;  // Seconds  - polling for the pump
+	long pollStickTime = 30;  // Seconds  - polling for the device plugged in
+	long pollPumpTime = 90;  // Seconds  - polling for the pump
 
 
 	/*
@@ -54,7 +54,7 @@ public:
 	 * try powercycling if stick fails? 0 = disabled, 1 = enabled
 	 */
 	int powerCycling = 1;
-	int noStickResetCount = 1;
+	int noStickResetCount = 2;
 
 	/*
 	 * vid and pid of the stick

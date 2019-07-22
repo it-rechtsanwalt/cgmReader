@@ -30,6 +30,7 @@
 #include "json.hpp"
 #include <string>
 #include "../pumpdriver/PumpStatus.h"
+
 /*
  *
  */
@@ -38,7 +39,7 @@ public:
 	StatusData();
 	virtual ~StatusData();
 	void initData();
-	void refresh (PumpStatus pumpstatus);
+	void refresh (PumpStatus pumpstatus, int result);
 	PumpStatus ps;
 	std::string getJson();
 

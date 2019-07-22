@@ -269,7 +269,7 @@ int PumpDriver::downloadData(PumpStatus * ps) {
 		answer = bmsg.decode(answer); //get the payload out of the binary message
 		answer = mmsg.decodeMessage(answer); // get the payload out of the minimed message
 		smrq.decodeMessageAndStatus(usbDevice, answer, ps); // decrypt the payload out of the minimed message and extract the status
-
+		ps->stickSerial = usbDevice->stickSerial;
 		LOG_F(INFO, "Received Pump Status:");
 		LOG_F(INFO, "----------------------------------------------------------------------------");
 		LOG_F(INFO, "Sensor BGL / active Insulin              : %d / %f", ps->sensorBGL, ps->activeInsulin);

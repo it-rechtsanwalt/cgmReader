@@ -34,37 +34,54 @@ StatusData::~StatusData() {
 	// TODO Auto-generated destructor stub
 }
 
-
 void StatusData::initData(void) {
 	ps.activeInsulin = 0;
 	ps.sensorBGL = 0;
 
-
 }
 
-void StatusData::refresh(PumpStatus pumpStatus) {
+void StatusData::refresh(PumpStatus pumpStatus, int result) {
 	ps = pumpStatus;
+	ps.readStatus = result;
+	ps.readTime = time(0);
+
 }
 
 std::string StatusData::getJson() {
-nlohmann::json j = {
-		  {"id",  "123" },
-		  {"readStatus", 1},
-//		  {"currentBasalRate", 1.3},
-//		  {"tempBasalRate", 0},
-//		  {"tempBasalPercentage", 50},
-//		  {"tempBasalMinutesRemaining", 30},
-//		  {"batteryLevelPercentage", 0x3},
-		  {"insulinUnitsRemaining", 70},
-		  {"activeInsulin", 1.5},
-		  {"sensorBGL", ps.sensorBGL},
-//		  {"readTime", 65461215},
-//		  {"trendArrow", 0xe0},
-//		  {"sensorBattery", 0x5},
-//		  {"timeToCalibrate", 120},
-//		  {"sensorStatus", 0},
-		  {"message", "nothing to say2"}
+	if (ps.readStatus != 40) {
+		// not a valid read: exit
+		nlohmann::json j = { { "id", ps.stickSerial },  { "message", ps.message }
 
 		};
-return j.dump();
+//		  {"sensorStatus", 0},
+//		  {"trendArrow", 0xe0},
+
+		return j.dump();
+
+
+
+	}
+
+	if (ps.pumpStatus & (1 << 6)) {
+//if (ps.sensorStatus == 0x00) {
+		nlohmann::json j = { { "id", ps.stickSerial }, { "sensorBGL",
+				ps.sensorBGL }, { "readStatus", ps.readStatus }, {
+				"currentBasalRate", ps.currentBasalRate },
+//		  {"tempBasalRate", },
+//		  {"tempBasalPercentage", 50},
+//		  {"tempBasalMinutesRemaining", 30},
+				{ "batteryLevelPercentage", ps.batteryLevelPercentage }, {
+						"insulinUnitsRemaining", ps.insulinUnitsRemaining }, {
+						"activeInsulin", ps.activeInsulin },
+//		  {"readTime", 65461215},
+				{ "sensorBattery", ps.sensorBattery }, { "timeToCalibrate",
+						ps.timeToCalibrate }, { "message", ps.message }
+
+		};
+//		  {"sensorStatus", 0},
+//		  {"trendArrow", 0xe0},
+
+		return j.dump();
+	}
+	return "";
 }

@@ -61,12 +61,10 @@ std::string readStatus; 		// our info output string
 time_t now = time(NULL); // actual time
 
 int readStick(void);
-int jsonThread (void);
+int jsonThread(void);
 std::mutex readStick_mutex;
 
-
 int read_status = 0;
-
 
 /**
  * ProgramStatus:
@@ -83,13 +81,13 @@ int read_status = 0;
 int programStatus = 0;
 int noStickFoundCounter = 0;
 
-int processArgs(int argc, char* argv[]);
+int processArgs(int argc, char *argv[]);
 bool timeToCheck();
 
 time_t pollForStick = time(NULL);
 time_t pollForPump = time(NULL);
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 	// process arguments
 	programStatus = processArgs(argc, argv);
 	// Start the logging facility
@@ -106,7 +104,6 @@ int main(int argc, char* argv[]) {
 
 	//create "the" reader Thread
 	std::thread readerJsonThread(jsonThread);
-
 
 	/*Main loop (non-blocking):
 	 * 1. if status is < 10: stick not initialized
@@ -191,7 +188,7 @@ int main(int argc, char* argv[]) {
 			programStatus = 7;
 //			if (disp == 1) {
 
-				// TODO process events
+			// TODO process events
 //				int pos = 0;
 //				std::vector<int> vals;
 //				if (hD.events.size()) {
@@ -233,7 +230,7 @@ int main(int argc, char* argv[]) {
 
 }
 
-int processArgs(int argc, char* argv[]) {
+int processArgs(int argc, char *argv[]) {
 	// TODO: process arguments!
 	return 0;
 }
@@ -287,8 +284,6 @@ int reading(void) {
 		return 33;
 	}
 
-
-
 	readStick_mutex.lock();
 	readStatus = mParams.statustexts[7];
 	result = pumpReader.readingStartDownload(&ps, &hD);
@@ -320,30 +315,23 @@ int readStick(void) {
 			int result = reading();
 			readStick_mutex.lock();
 			programStatus = result;
-			if (result == 40) {
-				statusData.refresh(ps);
-			} else {
-				statusData.initData();
-			}
+			statusData.refresh(ps, result);
 			readStick_mutex.unlock();
 		}
 
-
 	}
 }
 
-int jsonThread (void) {
+int jsonThread(void) {
 	if (!mParams.JsonServerEnable) {
 		return 0;
-	}
-	else {
+	} else {
 		LOG_F(INFO, "Starting Server at port %d", mParams.JsonServerPort);
 		statusData.initData();
-		jsonServer.startServer(mParams.JsonServerKey,mParams.JsonServerPort, &statusData);
+		jsonServer.startServer(mParams.JsonServerKey, mParams.JsonServerPort,
+				&statusData);
 		return 0;
 	}
 
 }
-
-
 
