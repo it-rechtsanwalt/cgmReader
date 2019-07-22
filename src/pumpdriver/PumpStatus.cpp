@@ -31,25 +31,25 @@
 std::string PumpStatus::trendArrowString() {
 		switch (trendArrow) {
 		case 0x60:{
-			return "no Arrows";
+			return " ";	// no trend
 		}
 		case 0xc0:{
-			return "3 arrows up";
+			return "UP UP UP ";		// 3 up
 		}
 		case 0xa0:{
-			return "2 arrows up";
+			return "up up";  // 2 up
 		}
 		case 0x80:{
-			return "1 arrow up";
+			return "up";   // up
 		}
 		case 0x40:{
-			return "1 arrow down";
+			return "down ";  // down
 		}
 		case 0x20:{
-			return "2 arrows down";
+			return "down";   // 2 down
 		}
 		case 0x00:{
-			return "3 arrows down";
+			return "DOWN DOWN DOWN";   // 3 down
 		}
 		default: break;
 		}

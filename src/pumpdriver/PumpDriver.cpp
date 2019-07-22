@@ -271,7 +271,7 @@ int PumpDriver::downloadData(PumpStatus * ps) {
 		smrq.decodeMessageAndStatus(usbDevice, answer, ps); // decrypt the payload out of the minimed message and extract the status
 		ps->stickSerial = usbDevice->stickSerial;
 		LOG_F(INFO, "Received Pump Status:");
-		LOG_F(INFO, "----------------------------------------------------------------------------");
+		LOG_F(INFO, "______________________________________________________________________________________________________________");
 		LOG_F(INFO, "Sensor BGL / active Insulin              : %d / %f", ps->sensorBGL, ps->activeInsulin);
 		LOG_F(INFO, "Trend                                    : %s", ps->trendArrowString().c_str());
 		LOG_F(INFO, "Insulin units remaining / batteryLevel(%): %d / %d", ps->insulinUnitsRemaining, ps->batteryLevelPercentage);
@@ -279,7 +279,6 @@ int PumpDriver::downloadData(PumpStatus * ps) {
 		LOG_F(INFO, "Sensor Time                              : %d", ps->sensorBGLTimeStamp);
 		LOG_F(INFO, "Bolus Wizzard                            : %d ", ps->bolusWizardBGL);
 		LOG_F(INFO, "Time to calibrate                        : %d ", ps->timeToCalibrate);
-
 		LOG_F(INFO, "______________________________________________________________________________________________________________");
 
 		return 0;

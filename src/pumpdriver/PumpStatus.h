@@ -58,6 +58,7 @@ public:
 	 3 arrows down = 0x00 =                 0000 0000
 	 */
 	unsigned char trendArrow ;
+
 	unsigned long long sensorBGLTimeStamp;
 	bool recentBolusWizard;
 	int bolusWizardBGL ;

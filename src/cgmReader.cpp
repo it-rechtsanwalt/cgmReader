@@ -98,6 +98,7 @@ int main(int argc, char *argv[]) {
 	LOG_F(INFO, "640g Reader. Version: %d.%d", VERSION_MAJOR, VERSION_MINOR);
 	LOG_F(INFO, "Press <ctrl>-c for exit");
 
+
 	//create "the" reader Thread
 	std::thread readerThread(readStick);
 	readStatus = mParams.statustexts[0];
@@ -315,6 +316,7 @@ int readStick(void) {
 			int result = reading();
 			readStick_mutex.lock();
 			programStatus = result;
+			ps.message = readStatus;
 			statusData.refresh(ps, result);
 			readStick_mutex.unlock();
 		}
