@@ -41,8 +41,9 @@ Software:
 
 1. install raspbian
 2. install dependencies:
-
-** TODO ** 
+```
+sudo aptitude install libcrypto++-dev  libhidapi-libusb0 libhidapi-dev libusb-1.0-0-dev liblzo2-dev libusb-dev
+```
 
 3. get the software
 
@@ -56,7 +57,18 @@ Software:
 
 ** TODO **
 
+6. grant permission (so no root is required):
 
+```
+sudo nano /etc/udev/rules.d/50-usb-bayer.rules
+```
+
+add:
+
+```
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1a79", ATTR{idProduct}=="6210", MODE="0666"
+```
+no reboot needed
 
 ## Q&A: 
 
