@@ -43,12 +43,6 @@ using namespace std;
 const int VERSION_MAJOR = 0;
 const int VERSION_MINOR = 3;
 
-
-
-// the vid/pid of a valid stick
-unsigned short vid = 0x1a79;
-unsigned short pid = 0x6210;
-
 ////////////////////////////////////////////////
 
 MainParameters mParams;
@@ -162,9 +156,10 @@ int main(int argc, char *argv[]) {
 			LOG_F(INFO, "Powercycling - just to be sure...");
 			// FIXME: this is quick and dirty. for the raspberry pi (ALL BUT ZERO and ZERO/W) we do a powercycling for all usb ports.
 			// FIXME: do a powercycling just for the port where the reader is connected...
-
+			// FIXME: we need a 10 second sleep for the stick to breath. after the powercycle we give to stick 20 secs to restart. Is is ugly!
+			sleep(10);
 			std::system("./uhubctl -a 2");
-			sleep(15);
+			sleep(20);
 			programStatus = 9;
 
 			break;
