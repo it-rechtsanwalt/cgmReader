@@ -41,9 +41,11 @@ using namespace std;
 
 //////////////// STATICS ////////////////////
 const int VERSION_MAJOR = 0;
-const int VERSION_MINOR = 2;
-int disp = 1;
-int logLevel = loguru::Verbosity_INFO;
+const int VERSION_MINOR = 3;
+
+
+
+// the vid/pid of a valid stick
 unsigned short vid = 0x1a79;
 unsigned short pid = 0x6210;
 
@@ -92,7 +94,7 @@ int main(int argc, char *argv[]) {
 	programStatus = processArgs(argc, argv);
 	// Start the logging facility
 	loguru::init(argc, argv);
-	loguru::g_stderr_verbosity = logLevel;
+	loguru::g_stderr_verbosity = mParams.logLevel;
 
 	// Say Hello
 	LOG_F(INFO, "640g Reader. Version: %d.%d", VERSION_MAJOR, VERSION_MINOR);

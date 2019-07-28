@@ -31,7 +31,7 @@
 std::string PumpStatus::trendArrowString() {
 		switch (trendArrow) {
 		case 0x60:{
-			return " ";	// no trend
+			return " - ";	// no trend
 		}
 		case 0xc0:{
 			return "UP UP UP ";		// 3 up

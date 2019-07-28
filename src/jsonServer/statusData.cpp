@@ -8,7 +8,7 @@
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
- * copyright notice, the following disclaimer and this permission notice 
+ * copyright notice, the following disclaimer and this permission notice
  * appear in all copies.
  *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
@@ -48,6 +48,8 @@ void StatusData::refresh(PumpStatus pumpStatus, int result) {
 }
 
 std::string StatusData::getJson() {
+	//fixme: this is ugly!
+
 	if (ps.readStatus != 40) {
 
 		// not a valid read: exit
@@ -57,7 +59,7 @@ std::string StatusData::getJson() {
 		return j.dump();
 
 	}
-
+	// pumpstatus says: we got cgm data...
 	if (ps.pumpStatus & (1 << 6)) {
 
 		nlohmann::json j = { { "id", ps.stickSerial }, { "sensorBGL", ps.sensorBGL }, { "readStatus", ps.readStatus },
@@ -66,14 +68,16 @@ std::string StatusData::getJson() {
 						ps.timeToCalibrate }, { "trend", ps.trendArrowString().c_str() }, { "message", ps.message }
 
 		};
-		//		  {"readTime", 65461215},
-		//		  {"tempBasalRate", },
-		//		  {"tempBasalPercentage", 50},
-		//		  {"tempBasalMinutesRemaining", 30},
-//		  {"sensorStatus", 0},
-//		  {"trendArrow", 0xe0},
-
 		return j.dump();
 	}
-	return "";
+
+	// pumpstatus says: something else, so return data we (usualy) know...
+
+	nlohmann::json j = { { "id", ps.stickSerial }, { "readStatus", ps.readStatus }, { "currentBasalRate", ps.currentBasalRate }, { "batteryLevelPercentage",
+			ps.batteryLevelPercentage }, { "insulinUnitsRemaining", ps.insulinUnitsRemaining }, { "activeInsulin", ps.activeInsulin }, { "message", ps.message }
+
+	};
+
+	return j.dump();
+
 }

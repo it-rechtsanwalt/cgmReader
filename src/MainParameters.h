@@ -30,6 +30,8 @@
 
 
 #include <string>
+#include "utils/loguru.hpp"
+
 
 /*
  * Class for calling parameters
@@ -38,6 +40,11 @@ class MainParameters {
 public:
 	MainParameters();
 	virtual ~MainParameters();
+
+	// our loggin level
+	int logLevel = loguru::Verbosity_INFO;
+
+
 
 	long pollStickTime = 30;  // Seconds  - polling for the device plugged in
 	long pollPumpTime = 90;  // Seconds  - polling for the pump
