@@ -20,7 +20,7 @@ The software is just testet in linux (it will not run in windows, because the li
 
 **It runs under Raspbian**
 
-### DOES IS WORK
+### DOES IS WORK?
 
 yes, but the software is in a alpha state. I use the system right now!
 
