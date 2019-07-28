@@ -26,6 +26,8 @@
 #include <iostream>
 #include "utils/loguru.hpp"
 #include "pumpdriver/PumpReader.h"
+#include "jsonServer/JsonServer.h"
+#include "jsonServer/statusData.h"
 #include <future>
 
 #include <unistd.h>
@@ -39,9 +41,11 @@ using namespace std;
 
 //////////////// STATICS ////////////////////
 const int VERSION_MAJOR = 0;
-const int VERSION_MINOR = 1;
-int disp = 1;
-int logLevel = loguru::Verbosity_7;
+const int VERSION_MINOR = 3;
+
+
+
+// the vid/pid of a valid stick
 unsigned short vid = 0x1a79;
 unsigned short pid = 0x6210;
 
@@ -52,12 +56,16 @@ PumpStatus ps { };
 PumpReader pumpReader;
 UsbDevice readData;
 HistoryData hD;
+StatusData statusData;
+JsonServer jsonServer;
 
 std::string readStatus; 		// our info output string
 time_t now = time(NULL); // actual time
 
 int readStick(void);
+int jsonThread(void);
 std::mutex readStick_mutex;
+
 int read_status = 0;
 
 /**
@@ -75,26 +83,30 @@ int read_status = 0;
 int programStatus = 0;
 int noStickFoundCounter = 0;
 
-int processArgs(int argc, char* argv[]);
+int processArgs(int argc, char *argv[]);
 bool timeToCheck();
 
 time_t pollForStick = time(NULL);
 time_t pollForPump = time(NULL);
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 	// process arguments
 	programStatus = processArgs(argc, argv);
 	// Start the logging facility
 	loguru::init(argc, argv);
-	loguru::g_stderr_verbosity = logLevel;
+	loguru::g_stderr_verbosity = mParams.logLevel;
 
 	// Say Hello
 	LOG_F(INFO, "640g Reader. Version: %d.%d", VERSION_MAJOR, VERSION_MINOR);
 	LOG_F(INFO, "Press <ctrl>-c for exit");
 
+
 	//create "the" reader Thread
 	std::thread readerThread(readStick);
 	readStatus = mParams.statustexts[0];
+
+	//create "the" reader Thread
+	std::thread readerJsonThread(jsonThread);
 
 	/*Main loop (non-blocking):
 	 * 1. if status is < 10: stick not initialized
@@ -177,11 +189,9 @@ int main(int argc, char* argv[]) {
 			LOG_F(INFO, "Read ok. Sleeping for %d seconds...",
 					mParams.pollPumpTime);
 			programStatus = 7;
+//			if (disp == 1) {
 
-			if (disp == 1) {
-				ps.readStatus = 1;
-
-				// TODO process events
+			// TODO process events
 //				int pos = 0;
 //				std::vector<int> vals;
 //				if (hD.events.size()) {
@@ -198,7 +208,7 @@ int main(int argc, char* argv[]) {
 //				}
 //
 //				fill_values(readData.getPumpStatus(), readStatus.c_str());
-			}
+//			}
 			pollForPump = time(NULL) + mParams.pollPumpTime;
 
 			break;
@@ -216,12 +226,15 @@ int main(int argc, char* argv[]) {
 
 	// wait for readerthread to finish...
 	readerThread.join();
-
+	if (mParams.JsonServerEnable) {
+		readerJsonThread.join();
+	}
 	return 0;
 
 }
 
-int processArgs(int argc, char* argv[]) {
+int processArgs(int argc, char *argv[]) {
+	// TODO: process arguments!
 	return 0;
 }
 
@@ -305,8 +318,24 @@ int readStick(void) {
 			int result = reading();
 			readStick_mutex.lock();
 			programStatus = result;
+			ps.message = readStatus;
+			statusData.refresh(ps, result);
 			readStick_mutex.unlock();
 		}
+
 	}
+}
+
+int jsonThread(void) {
+	if (!mParams.JsonServerEnable) {
+		return 0;
+	} else {
+		LOG_F(INFO, "Starting Server at port %d", mParams.JsonServerPort);
+		statusData.initData();
+		jsonServer.startServer(mParams.JsonServerKey, mParams.JsonServerPort,
+				&statusData);
+		return 0;
+	}
+
 }
 

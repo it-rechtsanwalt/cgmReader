@@ -29,6 +29,10 @@
 #define MAINPARAMETERS_H_
 
 
+#include <string>
+#include "utils/loguru.hpp"
+
+
 /*
  * Class for calling parameters
  */
@@ -37,16 +41,27 @@ public:
 	MainParameters();
 	virtual ~MainParameters();
 
-	long pollStickTime = 10;  // Seconds  - polling for the device plugged in
-	long pollPumpTime = 20;  // Seconds  - polling for the pump
+	// our loggin level
+	int logLevel = loguru::Verbosity_INFO;
 
 
+
+	long pollStickTime = 30;  // Seconds  - polling for the device plugged in
+	long pollPumpTime = 90;  // Seconds  - polling for the pump
+
+
+	/*
+	 * Server Settings
+	 */
+	bool JsonServerEnable = true; // start json server
+	int  JsonServerPort = 8888; // json server port
+	std::string JsonServerKey = "1234"; // Json server key
 
 	/*
 	 * try powercycling if stick fails? 0 = disabled, 1 = enabled
 	 */
 	int powerCycling = 1;
-	int noStickResetCount = 1;
+	int noStickResetCount = 2;
 
 	/*
 	 * vid and pid of the stick

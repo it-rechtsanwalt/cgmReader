@@ -54,7 +54,7 @@ int USBDriver::initialize(unsigned short vid, unsigned short pid,
 	LOG_F(INFO, "Found Stick: %S", wstr);
 
 	res = hid_get_product_string(handle, wstr, MAX_PAYLOAD_SIZE);
-	LOG_F(3, "Product String: %S", wstr);
+	LOG_F(4, "Product String: %S", wstr);
 
 	res = hid_get_serial_number_string(handle, wstr, MAX_PAYLOAD_SIZE);
 	LOG_F(INFO, "Serial Number String: %S", wstr);
@@ -76,7 +76,7 @@ void USBDriver::close_device() {
 	if (handle) {
 		hid_close(handle);
 
-		LOG_F(INFO, "Closing Device...");
+		LOG_F(4, "Closing Device...");
 		hid_exit();
 		handle = 0;
 	}

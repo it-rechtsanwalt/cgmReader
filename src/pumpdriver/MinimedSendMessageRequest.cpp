@@ -140,7 +140,7 @@ std::vector<unsigned char> MinimedSendMessageRequest::decodeMessage(UsbDevice *d
 		//throw new MinimedMessageException("Message Checksum Error");
 
 	}
-	LOG_F(8, "Decrypted:                                  %s", hlp.toHexString(msg).c_str());
+	LOG_F(7, "Decrypted:                                  %s", hlp.toHexString(msg).c_str());
 
 	return msg;
 
@@ -153,6 +153,18 @@ std::vector<unsigned char> MinimedSendMessageRequest::decodeMessage(UsbDevice *d
 
 int MinimedSendMessageRequest::decodeMessageAndStatus(UsbDevice *device, std::vector<unsigned char> payload, PumpStatus * ps) {
 	std::vector<unsigned char> decoded = decodeMessage(device, payload); // decrypt the payload out of the minimed message
+
+	/*
+	 * Example: Payload received:
+	 *	0         5        10         5        20         5        30         5        40         5        50         5        60         5        70         5        80         5        90         5        1
+
+	 *	00                              10                             20                               30                              40                             50                               60
+	 *	02013c500000000000000000000000000000138824c675c3bb000200001b580000000000000000005cc664001227761900000003e800ce80a3b8dea422dd9800600000016323ffae000000000000000000000000000000000000008700000087
+	 *  02013c500000000000000000000000000000138824c7a9bbc2000200001b58000000000000000000109a64000e21301900000007d0006880a4e2a7a422dd980060000002bc27ffef000000000000000000000000000000000000008700000087
+	 */
+
+	//FIXME: This log shall on level 4!
+	LOG_F(9,"Payload received: %s", hlp.toHexString(decoded).c_str());
 
 	if (hlp.extractCommand(decoded) - minimedCommands.READ_PUMP_STATUS_RESPONSE == 0) {
 
@@ -231,7 +243,7 @@ int MinimedSendMessageRequest::processMultiPacketTransferMessage(UsbDevice *devi
 int MinimedSendMessageRequest::decodePumpHistory(UsbDevice *device, std::vector<unsigned char> payload, PumpHistory * ph) {
 
 	std::vector<unsigned char> decoded = decodeMessage(device, payload); // decrypt the payload out of the minimed message
-	LOG_F(6, "decoding history message");
+	LOG_F(7, "decoding history message");
 
 	return 1;
 }

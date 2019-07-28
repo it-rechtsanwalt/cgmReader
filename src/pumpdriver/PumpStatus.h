@@ -33,10 +33,6 @@
 
 class PumpStatus {
 public:
-	/* Readstatus:
-	 * 1: ok
-	 * 0: not ok
-	 */
 	int readStatus;
 	float currentBasalRate ;
 	float tempBasalRate ;
@@ -47,7 +43,7 @@ public:
 	float activeInsulin ;
 	int sensorBGL ;
 	unsigned long readTime;
-
+	std::string stickSerial;
 	int * bglVals;
 	int valCount;
 
@@ -62,6 +58,7 @@ public:
 	 3 arrows down = 0x00 =                 0000 0000
 	 */
 	unsigned char trendArrow ;
+
 	unsigned long long sensorBGLTimeStamp;
 	bool recentBolusWizard;
 	int bolusWizardBGL ;
@@ -84,6 +81,7 @@ public:
 	unsigned char sensorStatus ;
 
 	std::string trendArrowString();
+	std::string message;
 
 };
 ///*

@@ -23,7 +23,6 @@
  * ============================================================================
  */
 
-
 #include "MimimedMessage.h"
 
 MimimedMessage::MimimedMessage() {
@@ -39,47 +38,36 @@ std::vector<unsigned char> MimimedMessage::buildMessage(unsigned char command, s
 	buf.push_back(command);
 	buf.push_back(payload.size() + 2);
 	buf.insert(buf.end(), &payload[0], &payload[payload.size()]);
-	long l = hlp.CRC16CCITT(buf, 0, 0xFFFF, 0x1021,
-			ENCRYPTED_ENVELOPE_SIZE + (int) payload.size());
+	long l = hlp.CRC16CCITT(buf, 0, 0xFFFF, 0x1021, ENCRYPTED_ENVELOPE_SIZE + (int) payload.size());
 	unsigned char c[4];
 	hlp.longtocharLE(l, &c[0]);
 	buf.push_back(c[0]);
 	buf.push_back(c[1]);
 
-
 	return buf;
 }
 
+const std::vector<unsigned char> MimimedMessage::decodeMessage(std::vector<unsigned char> payload) {
+	unsigned char c1 = payload[payload.size() - 1];
+	unsigned char c2 = payload[payload.size() - 2];
+	unsigned short crc = c1 << 8;
+	crc += c2;
 
-const std::vector<unsigned char> MimimedMessage::decodeMessage(std::vector<unsigned char> payload)  {
-		unsigned char c1 = payload [payload.size()-1];
-		unsigned char c2 = payload [payload.size()-2];
-		unsigned short crc = c1 << 8;
-		crc += c2;
+	int calcCrc = hlp.CRC16CCITT(payload, 0, 0xFFFF, 0x1021, (int) payload.size() - 2);
 
-		int calcCrc = hlp.CRC16CCITT(payload, 0,  0xFFFF, 0x1021, (int) payload.size()-2);
-
-		if (crc != calcCrc) {
-			LOG_F(WARNING, "Warning: CRC error");
-			//TODO Sometimes the crc fails, even when the message is correct decoded???
+	if (crc != calcCrc) {
+		LOG_F(WARNING, "Warning: CRC error");
+		//TODO Sometimes the crc fails, even when the message is correct decoded???
 //			throw new MinimedMessageException("CRC Error in Minimed Message. CRC should be "
 //					+ (message[message.length - 1] & 0xff) + (message[message.length - 2] & 0xff));
-		}
-			// we do not need the first 2 bytes....
-		// we do not need the last 2 bytes....
-
-		std::vector<unsigned char> vec;
-		vec.insert(vec.begin(),&payload[2],&payload[payload.size()-2]);
-		return vec;
 	}
+	// we do not need the first 2 bytes....
+	// we do not need the last 2 bytes....
 
-
-
-
-
-
-
-
+	std::vector<unsigned char> vec;
+	vec.insert(vec.begin(), &payload[2], &payload[payload.size() - 2]);
+	return vec;
+}
 
 /**
  * Negotiate the channel - special message
@@ -93,9 +81,7 @@ const std::vector<unsigned char> MimimedMessage::decodeMessage(std::vector<unsig
  * @throws MinimedMessageException
  */
 
-std::vector<unsigned char> MimimedMessage::channelNegotiationMessage(
-		unsigned char channel, unsigned long long linkMAC,
-		unsigned long long pumpMAC) {
+std::vector<unsigned char> MimimedMessage::channelNegotiationMessage(unsigned char channel, unsigned long long linkMAC, unsigned long long pumpMAC) {
 	std::vector<unsigned char> buf;
 	buf.push_back(0x01); // byte 0 (always 0x01)
 	buf.push_back(channel); // byte 1 the channel

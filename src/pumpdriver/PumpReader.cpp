@@ -46,7 +46,7 @@ void PumpReader::powerCircle(void) {
 	 * sleep 100
 	 * echo 1 > /sys/bus/usb/devices/<STICK-ID>/authorized
 	 */
-	LOG_F(INFO, "Power circle (NOT YET IMPLEMENTED)");
+	LOG_F(2, "Power circle (NOT YET IMPLEMENTED)");
 
 }
 

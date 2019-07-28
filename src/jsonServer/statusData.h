@@ -1,14 +1,14 @@
 /*============================================================================
- *  Name       : PumpStatus.cpp
+ *  Name       : statusData.h
  *  Project    : cgmReader
  *  Author     : compuholic - itra.at
- *  created    : Jun 22, 2019
+ *  created    : Jun 28, 2019
  *
  * Copyright 2019 - compuholic - itra.at
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
- * copyright notice, the following disclaimer and this permission notice
+ * copyright notice, the following disclaimer and this permission notice 
  * appear in all copies.
  *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
@@ -23,36 +23,26 @@
  * ============================================================================
  */
 
+#ifndef UTILS_STATUSDATA_H_
+#define UTILS_STATUSDATA_H_
 
-#include "PumpStatus.h"
 
+#include "json.hpp"
+#include <string>
+#include "../pumpdriver/PumpStatus.h"
 
+/*
+ *
+ */
+class StatusData {
+public:
+	StatusData();
+	virtual ~StatusData();
+	void initData();
+	void refresh (PumpStatus pumpstatus, int result);
+	PumpStatus ps;
+	std::string getJson();
 
-std::string PumpStatus::trendArrowString() {
-		switch (trendArrow) {
-		case 0x60:{
-			return " - ";	// no trend
-		}
-		case 0xc0:{
-			return "UP UP UP ";		// 3 up
-		}
-		case 0xa0:{
-			return "up up";  // 2 up
-		}
-		case 0x80:{
-			return "up";   // up
-		}
-		case 0x40:{
-			return "down ";  // down
-		}
-		case 0x20:{
-			return "down";   // 2 down
-		}
-		case 0x00:{
-			return "DOWN DOWN DOWN";   // 3 down
-		}
-		default: break;
-		}
-		return "not initialized";
-	}
+};
 
+#endif /* UTILS_STATUSDATA_H_ */

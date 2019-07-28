@@ -1,14 +1,14 @@
 /*============================================================================
- *  Name       : PumpStatus.cpp
+ *  Name       : jsonServer.h
  *  Project    : cgmReader
  *  Author     : compuholic - itra.at
- *  created    : Jun 22, 2019
+ *  created    : Jun 27, 2019
  *
  * Copyright 2019 - compuholic - itra.at
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
- * copyright notice, the following disclaimer and this permission notice
+ * copyright notice, the following disclaimer and this permission notice 
  * appear in all copies.
  *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
@@ -23,36 +23,40 @@
  * ============================================================================
  */
 
+#ifndef JSONSERVER_H_
+#define JSONSERVER_H_
 
-#include "PumpStatus.h"
+#include <fcntl.h>
+#include <errno.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <string.h>
+#include <string>
+#include "statusData.h"
+#include <netinet/tcp.h>
 
+/*
+ *
+ */
+class JsonServer {
+public:
+	JsonServer();
+	virtual ~JsonServer();
+	int startServer(std::string id, int port, StatusData * sdata);
 
+private:
+	struct sockaddr_in server;
+	int sock = 0, fd;
+	int reply(int client_socket);
+	int check_data_vality(char data[]);
+	std::string extractCommand (char data []);
+	std::string key;
+	StatusData * sd;
+};
 
-std::string PumpStatus::trendArrowString() {
-		switch (trendArrow) {
-		case 0x60:{
-			return " - ";	// no trend
-		}
-		case 0xc0:{
-			return "UP UP UP ";		// 3 up
-		}
-		case 0xa0:{
-			return "up up";  // 2 up
-		}
-		case 0x80:{
-			return "up";   // up
-		}
-		case 0x40:{
-			return "down ";  // down
-		}
-		case 0x20:{
-			return "down";   // 2 down
-		}
-		case 0x00:{
-			return "DOWN DOWN DOWN";   // 3 down
-		}
-		default: break;
-		}
-		return "not initialized";
-	}
-
+#endif /* JSONSERVER_H_ */
