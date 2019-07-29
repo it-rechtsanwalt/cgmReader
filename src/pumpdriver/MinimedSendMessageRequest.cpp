@@ -185,6 +185,8 @@ int MinimedSendMessageRequest::decodeMessageAndStatus(UsbDevice *device, std::ve
 		ps->activeInsulin = (float) hlp.chartolonglong(0, 0, 0, 0, 0, 0, decoded[51], decoded[52]) / 10000;
 		ps->pumpStatus = decoded[0x03];
 		ps->timeToCalibrate = hlp.charToShort(decoded[0x43], decoded[0x44]);
+		ps->alarm = hlp.charToShort(decoded[0x4b], decoded[0x4c]);
+
 		ps->sensorStatus = decoded[0x41];
 		ps->sensorBGLTimeStamp = hlp.chartolonglong(decoded[0x37], decoded[0x38], decoded[0x39], decoded[0x3a], decoded[0x3b], decoded[0x3c], decoded[0x3d],
 				decoded[0x3e]);

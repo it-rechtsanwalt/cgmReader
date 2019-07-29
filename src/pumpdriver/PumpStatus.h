@@ -71,6 +71,9 @@ public:
 	unsigned char pumpStatus ;
 	unsigned short int timeToCalibrate ;
 
+
+	unsigned char alarm;
+
 	/**
 	 * @desc status
 	 * -1 = not initialized

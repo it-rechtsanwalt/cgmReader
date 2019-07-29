@@ -49,35 +49,50 @@ void StatusData::refresh(PumpStatus pumpStatus, int result) {
 
 std::string StatusData::getJson() {
 	//fixme: this is ugly!
+	std::string msg;
+	nlohmann::json js = { { "id", ps.stickSerial }, { "message", ps.message } };
 
 	if (ps.readStatus != 40) {
-
+		msg.append("no pump found.");
 		// not a valid read: exit
-		nlohmann::json j = { { "id", ps.stickSerial }, { "message", ps.message }
-
-		};
-		return j.dump();
+		return js.dump();
 
 	}
-	// pumpstatus says: we got cgm data...
+	// pumpstatus says: calibrating
 	if (ps.pumpStatus & (1 << 6)) {
+		if (ps.sensorStatus == 1) {
+			js["sensorBGL"] = ps.sensorBGL;
+			js["sensorBattery"] = ps.sensorBattery;
+			js["trend"] = ps.trendArrowString().c_str();
+			msg.append("Calibrating...(%d min remain)", ps.timeToCalibrate);
 
-		nlohmann::json j = { { "id", ps.stickSerial }, { "sensorBGL", ps.sensorBGL }, { "readStatus", ps.readStatus },
-				{ "currentBasalRate", ps.currentBasalRate }, { "batteryLevelPercentage", ps.batteryLevelPercentage }, { "insulinUnitsRemaining",
-						ps.insulinUnitsRemaining }, { "activeInsulin", ps.activeInsulin }, { "sensorBattery", ps.sensorBattery }, { "timeToCalibrate",
-						ps.timeToCalibrate }, { "trend", ps.trendArrowString().c_str() }, { "message", ps.message }
+		}
+		if ((ps.sensorStatus == 2)||(ps.sensorStatus == 0)) {
+			js["sensorBGL"] = ps.sensorBGL;
+			js["sensorBattery"] = ps.sensorBattery;
+			js["trend"] = ps.trendArrowString().c_str();
+			msg.append("sensor ok");
+		    js["timeToCalibrate"] = ps.timeToCalibrate;
+		}
+		if (ps.sensorStatus == 4) {
+			js["sensorBGL"] = 0;
+			js["sensorBattery"] = ps.sensorBattery;
+			js["trend"] = "-";
+			msg.append("no sensor value available");
+		    js["timeToCalibrate"] = ps.timeToCalibrate;
+		}
 
-		};
-		return j.dump();
 	}
+	if (ps.alarm != 0) {
+		msg.append(" - ALARM!");
+	}
+	js["message"] = msg;
+	js["readStatus"] = ps.readStatus;
+	js["currentBasalRate"] = ps.currentBasalRate;
+	js["batteryLevelPercentage"] = ps.batteryLevelPercentage;
+	js["insulinUnitsRemaining"] = ps.insulinUnitsRemaining;
+	js["activeInsulin"] = ps.activeInsulin;
 
-	// pumpstatus says: something else, so return data we (usualy) know...
-
-	nlohmann::json j = { { "id", ps.stickSerial }, { "readStatus", ps.readStatus }, { "currentBasalRate", ps.currentBasalRate }, { "batteryLevelPercentage",
-			ps.batteryLevelPercentage }, { "insulinUnitsRemaining", ps.insulinUnitsRemaining }, { "activeInsulin", ps.activeInsulin }, { "message", ps.message }
-
-	};
-
-	return j.dump();
+	return js.dump();
 
 }

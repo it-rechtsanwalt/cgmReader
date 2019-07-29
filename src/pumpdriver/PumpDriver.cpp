@@ -279,6 +279,8 @@ int PumpDriver::downloadData(PumpStatus * ps) {
 		LOG_F(INFO, "Sensor Time                              : %d", ps->sensorBGLTimeStamp);
 		LOG_F(INFO, "Bolus Wizzard                            : %d ", ps->bolusWizardBGL);
 		LOG_F(INFO, "Time to calibrate                        : %d ", ps->timeToCalibrate);
+        LOG_F(INFO, "Sensorstatus / PumpStatus                : 0x%x / 0x%x, ",ps->sensorStatus, ps->pumpStatus);
+
 		LOG_F(INFO, "______________________________________________________________________________________________________________");
 
 		return 0;
