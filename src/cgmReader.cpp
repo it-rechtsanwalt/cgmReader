@@ -36,6 +36,8 @@
 #include <stdlib.h>
 #include "MainParameters.h"
 #include <mutex>
+#include <sys/prctl.h>
+
 
 using namespace std;
 
@@ -305,7 +307,7 @@ int reading(void) {
 }
 
 int readStick(void) {
-
+	prctl(PR_SET_NAME,"ReaderThread",0,0,0);
 	while (1) {
 		sleep(1);
 		if (programStatus == 10) {
@@ -325,6 +327,8 @@ int jsonThread(void) {
 	if (!mParams.JsonServerEnable) {
 		return 0;
 	} else {
+		prctl(PR_SET_NAME,"JsonServerThread",0,0,0);
+
 		LOG_F(INFO, "Starting Server at port %d", mParams.JsonServerPort);
 		statusData.initData();
 		jsonServer.startServer(mParams.JsonServerKey, mParams.JsonServerPort,
